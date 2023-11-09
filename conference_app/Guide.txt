@@ -1,0 +1,22 @@
+app folder:
+
+streamlit_app.py: This is the main Streamlit application file. You'll define your Streamlit app and its structure here.
+
+pages directory: Each page of your multi-page Streamlit app has its own Python file. These files contain the Streamlit code specific to each page. Here's what these pages might contain:
+
+home.py: Streamlit code for the home page, which displays available conference rooms and serves as the main entry point.
+booking.py: Streamlit code for the booking page where users can submit booking requests.
+admin.py: Streamlit code for the admin dashboard, allowing administrators to manage rooms and permissions.
+user_profile.py: Streamlit code for the user profile page, where registered users can view and update their profiles.
+init.py: Initialize your Flask app and other necessary configurations.
+
+routes.py: Define routes for your Flask app, which can handle data processing, database interactions, and more. Streamlit pages will interact with these routes for data retrieval and updates.
+
+database folder:
+
+database.db: The SQLite database file (or another database of your choice) to store information about conference rooms, user data, bookings, and permissions.
+venv (virtual environment - optional): Create a virtual environment to manage your project's dependencies. You can use venv or virtualenv.
+
+config.py: Configuration settings for your Flask application, including database configurations and other app-specific settings.
+
+run.py: The main entry point for running your Flask application, which can handle any API-related routes and interactions.
