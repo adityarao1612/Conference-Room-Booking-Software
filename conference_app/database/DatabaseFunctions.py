@@ -86,7 +86,7 @@ def add_user(username, password, email, full_name, user_type):
         print(f"Error adding user: {e}")
 
 
-def add_room(room_name, capacity, projector, mics, whiteboard, price, location, description, availability):
+def add_room(room_name, capacity=100, projector=1, mics=1, whiteboard=1, price=1000, location='', description='', availability='available'):
     try:
         connection, cursor = connect_to_database()
         if connection:
@@ -149,6 +149,7 @@ def identify_user_type(username):
                 "SELECT user_type FROM Users WHERE username = ?", (username,))
             user_type = cursor.fetchone()
             if user_type:
+                print(user_type)
                 return user_type[0]
             else:
                 return None
@@ -248,12 +249,14 @@ def view_booked_rooms_for_date(selected_date):
         return None
 
 
+add_room(5)
+view_rooms()
 # TESTING FUNCTIONS:
 
 
 # print(view_booked_rooms_for_date("2023-11-17"))
 
-# print(view_notifications(2))
+# print(identify_user_type("admin"))
 
 # update_room(2, 'Room B', 25, 1, 1, 0, 200,
 # 'Building B', 'Large conference room', 'available')
