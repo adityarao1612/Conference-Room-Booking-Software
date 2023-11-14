@@ -1,0 +1,36 @@
+SetupDatabase.py:
+run this file if you want to reset the database with some sample data.
+
+CheckDatabase.py:
+quickly prints all the tables and its contents in the database
+
+DatabaseFunctions.py:
+functions to help manage database
+
+-function attributes and return values:
+
+view_rooms():returns all rooms
+
+view_room_specification(room_id):returns view_room_specification of room_id as a tuple
+
+add_user(username, password, email, full_name, user_type)
+
+add_room(room_name, capacity, projector, mics, whiteboard, price, location, description, availability)
+
+update_room(room_id, room_name, capacity, projector, mics, whiteboard, price, location, description, availability)
+
+remove_room(room_id)
+
+remove_user(user_id)
+
+identify_user_type(username) returns user_type
+ 
+join_waiting_list(user_id, room_id, requested_datetime)
+
+show_waiting_list(room_id):returns waiting_list for room_id with status pending
+
+unjoin_waiting_list(user_id, room_id)
+
+view_notifications(user_id) returns notifications for user as list
+
+view_booked_rooms_for_date(selected_date) returns list of bookedrooms
