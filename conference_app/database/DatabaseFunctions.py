@@ -32,6 +32,25 @@ def close_connection(connection, cursor):
 # Function to view rooms
 
 
+def authenticate(username, password):
+
+    try:
+        connection, cursor = connect_to_database()
+        if connection:
+            cursor.execute(
+                "SELECT * FROM Users WHERE username = ? and password = ?", (username, password,))
+            user = cursor.fetchone()
+            if user:
+                print(user)
+                return user
+            else:
+                return None
+        close_connection(connection, cursor)
+    except Exception as e:
+        print(f"Error logging in: {e}")
+        return None
+
+
 def view_rooms():
     try:
         connection, cursor = connect_to_database()
@@ -181,7 +200,26 @@ def show_waiting_list(room_id):
         connection, cursor = connect_to_database()
         if connection:
             cursor.execute(
-                "SELECT user_id,room_id, requested_datetime,status FROM WaitingList WHERE room_id = ? AND status = 'pending'", (room_id,))
+                "SELECT user_id,room_id, requested_datetime,status FROM WaitingList WHERE room_id = ?", (room_id,))
+            waiting_list = cursor.fetchall()
+            if waiting_list:
+                print("Waiting List:")
+                for entry in waiting_list:
+                    print(entry)
+            else:
+                print("Waiting list is empty for this room.")
+        close_connection(connection, cursor)
+        return waiting_list
+    except Exception as e:
+        print(f"Error showing waiting list: {e}")
+
+
+def show_waiting_list_for_user(user_id):
+    try:
+        connection, cursor = connect_to_database()
+        if connection:
+            cursor.execute(
+                "SELECT user_id,room_id, requested_datetime,status FROM WaitingList WHERE user_id = ? and status = 'pending'", (user_id,))
             waiting_list = cursor.fetchall()
             if waiting_list:
                 print("Waiting List:")
@@ -233,7 +271,7 @@ def view_booked_rooms_for_date(selected_date):
         connection, cursor = connect_to_database()
         if connection:
             cursor.execute("""
-                SELECT BookedRoom.booking_id, Users.username, Rooms.room_name, BookedRoom.start_datetime, BookedRoom.end_datetime, BookedRoom.purpose, BookedRoom.status
+                SELECT BookedRoom.booking_id, Users.username,Rooms.room_id, Rooms.room_name, BookedRoom.start_datetime, BookedRoom.end_datetime, BookedRoom.purpose, BookedRoom.status
                 FROM BookedRoom
                 INNER JOIN Users ON BookedRoom.user_id = Users.user_id
                 INNER JOIN Rooms ON BookedRoom.room_id = Rooms.room_id
@@ -249,8 +287,26 @@ def view_booked_rooms_for_date(selected_date):
         return None
 
 
-add_room(5)
-view_rooms()
+def view_booked_rooms():
+    try:
+        connection, cursor = connect_to_database()
+        if connection:
+            cursor.execute("""
+                SELECT BookedRoom.booking_id, Users.username,Rooms.room_id, Rooms.room_name, BookedRoom.start_datetime, BookedRoom.end_datetime, BookedRoom.purpose
+                FROM BookedRoom
+                INNER JOIN Users ON BookedRoom.user_id = Users.user_id
+                INNER JOIN Rooms ON BookedRoom.room_id = Rooms.room_id
+            """)
+
+            booked_rooms = cursor.fetchall()
+
+        close_connection(connection, cursor)
+        return booked_rooms
+    except Exception as e:
+        print(f"Error getting booked rooms: {e}")
+        return None
+
+#
 # TESTING FUNCTIONS:
 
 
