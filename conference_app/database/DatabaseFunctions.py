@@ -129,6 +129,19 @@ def update_room(room_id, room_name, capacity, projector, mics, whiteboard, price
         close_connection(connection, cursor)
     except Exception as e:
         print(f"Error updating room: {e}")
+
+
+def update_room_infra(room_id, capacity, projector, mics, whiteboard):
+    try:
+        connection, cursor = connect_to_database()
+        if connection:
+            cursor.execute("UPDATE Rooms SET room_name=?, capacity=?, projector=?, mics=?, whiteboard=?, price=?, location=?, description=?, availability=? WHERE room_id=?",
+                           (capacity, projector, mics, whiteboard, room_id))
+            connection.commit()
+            print("Room updated successfully.")
+        close_connection(connection, cursor)
+    except Exception as e:
+        print(f"Error updating room: {e}")
 # Function to remove room
 
 
@@ -248,6 +261,92 @@ def unjoin_waiting_list(user_id, room_id):
         print(f"Error removing from waiting list: {e}")
 
 
+def book_room(user_id, room_id_to_book, date_to_book, start_time_to_book, end_time_to_book):
+    try:
+        connection, cursor = connect_to_database()
+        if connection:
+            # Insert a new record into the BookedRoom table with status set to 'pending'
+            cursor.execute("""
+                INSERT INTO BookedRoom (user_id, room_id, start_datetime, end_datetime, status)
+                VALUES (?, ?, ?, ?, 'pending')
+            """, (user_id, room_id_to_book, f"{date_to_book} {start_time_to_book}", f"{date_to_book} {end_time_to_book}"))
+
+            connection.commit()
+            print(f"Room ID {room_id_to_book} booked successfully on {
+                  date_to_book} from {start_time_to_book} to {end_time_to_book}.")
+
+    except Exception as e:
+        print(f"Error booking room: {e}")
+        connection.rollback()
+
+    finally:
+        close_connection(connection, cursor)
+
+
+def get_waiting_list_users(room_id, selected_date):
+    try:
+        connection, cursor = connect_to_database()
+        if connection:
+            cursor.execute("""
+                SELECT Users.user_id, Users.username
+                FROM WaitingList
+                INNER JOIN Users ON WaitingList.user_id = Users.user_id
+                WHERE WaitingList.room_id = ? AND DATE(WaitingList.requested_datetime) = ?
+            """, (room_id, selected_date))
+
+            waiting_list_users = cursor.fetchall()
+            return waiting_list_users
+
+    except Exception as e:
+        print(f"Error getting waiting list users: {e}")
+        return None
+
+# Updated unbook_room function with notification logic
+
+
+def unbook_room(booking_id):
+    try:
+        connection, cursor = connect_to_database()
+        if connection:
+            # Get room_id and date for the canceled booking
+            cursor.execute(
+                "SELECT room_id, start_datetime FROM BookedRoom WHERE booking_id = ?", (booking_id,))
+            canceled_booking = cursor.fetchone()
+
+            if canceled_booking:
+                room_id, canceled_date = canceled_booking
+
+                # Update the status of the booking to 'canceled'
+                cursor.execute("""
+                    UPDATE BookedRoom
+                    SET status = 'canceled'
+                    WHERE booking_id = ?
+                """, (booking_id,))
+
+                # Get users in the waiting list for the room and date
+                waiting_list_users = get_waiting_list_users(
+                    room_id, canceled_date)
+
+                if waiting_list_users:
+                    # Add notifications for users in the waiting list
+                    for user in waiting_list_users:
+                        cursor.execute("""
+                            INSERT INTO Notifications (user_id, message, timestamp, status)
+                            VALUES (?, ?, DATETIME('now'), 'unread')
+                        """, (user[0], f"The room (ID: {room_id}) is now available on {canceled_date}.",))
+
+                connection.commit()
+                print(f"Booking ID {
+                      booking_id} canceled successfully. Notifications sent to waiting list users.")
+
+    except Exception as e:
+        print(f"Error canceling booking: {e}")
+        connection.rollback()
+
+    finally:
+        close_connection(connection, cursor)
+
+
 def view_notifications(user_id):
     try:
         connection, cursor = connect_to_database()
@@ -275,7 +374,7 @@ def view_booked_rooms_for_date(selected_date):
                 FROM BookedRoom
                 INNER JOIN Users ON BookedRoom.user_id = Users.user_id
                 INNER JOIN Rooms ON BookedRoom.room_id = Rooms.room_id
-                WHERE DATE(BookedRoom.start_datetime) = ?
+                WHERE DATE(BookedRoom.start_datetime) = ? and status ='pending'
             """, (selected_date,))
 
             booked_rooms = cursor.fetchall()
@@ -285,6 +384,45 @@ def view_booked_rooms_for_date(selected_date):
     except Exception as e:
         print(f"Error getting booked rooms: {e}")
         return None
+
+
+def check_room_availability(room_id, selected_date, start_time, end_time):
+    try:
+        connection, cursor = connect_to_database()
+        if connection:
+            # Check if the room is booked for the specified date and time range
+            # cursor.execute("""
+            #     SELECT *
+            #     FROM BookedRoom
+            #     WHERE room_id = ?
+            #     AND DATE(start_datetime) = ?
+            #     AND ((TIME(start_datetime) < ? AND TIME(end_datetime) > ?)
+            #         OR (TIME(start_datetime) >= ? AND TIME(start_datetime) < ?)
+            #         OR (TIME(end_datetime) > ? AND TIME(end_datetime) <= ?))
+            # """, (room_id, selected_date, start_time, start_time, start_time, end_time, end_time, end_time))
+            cursor.execute("""
+                SELECT *
+                FROM BookedRoom
+                WHERE room_id = ? 
+                AND DATE(start_datetime) = ? 
+            """, (room_id, selected_date))
+
+            conflicting_bookings = cursor.fetchall()
+
+            close_connection(connection, cursor)
+
+            if conflicting_bookings:
+                print(
+                    f"Room {room_id} is not available for the selected date and time range.")
+                return False
+            else:
+                print(
+                    f"Room {room_id} is available for the selected date and time range.")
+                return True
+
+    except Exception as e:
+        print(f"Error checking room availability: {e}")
+        return False
 
 
 def view_booked_rooms():
