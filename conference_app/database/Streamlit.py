@@ -1,12 +1,15 @@
 import streamlit as st
 from DatabaseFunctions import *
 import pandas as pd
+
 # Set page configuration
 st.set_page_config(layout="wide")
 
+
 # Initialize session state variables
 if 'user' not in st.session_state:
-    st.session_state.user = ""
+    st.session_state.user = "username1"
+
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 if 'page' not in st.session_state:
@@ -23,11 +26,8 @@ def login_page():
     st.title("Conference App Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
-    login_button = st.button("Login!")
-
-    if login_button:
-        user = authenticate(username, password)
-        if user:
+    user = authenticate(username, password)
+    if user:
             st.session_state.user = user
             st.session_state.logged_in = True
             st.success(f"Logged in as {user[1]} ({user[5]})")
@@ -120,8 +120,7 @@ def book_rooms_option(user_id):
             # If the room is available, book it
             book_room(user_id, room_id_to_book, date_to_book,
                       start_time_to_book, end_time_to_book)
-            st.success(f"Room ID {room_id_to_book} booked successfully on {
-                       date_to_book} from {start_time_to_book} to {end_time_to_book}.")
+            st.success(f"Room ID {room_id_to_book} booked successfully on {date_to_book} from {start_time_to_book} to {end_time_to_book}.")
         else:
             st.warning(
                 "The room is not available for the selected date and time.")
@@ -166,8 +165,7 @@ def waiting_list_option(user_id):
 
     if join_waiting_list_button and room_id_to_join and requested_datetime:
         join_waiting_list(user_id, room_id_to_join, requested_datetime)
-        st.success(f"Successfully joined waiting list for Room ID {
-                   room_id_to_join} on {requested_datetime}.")
+        st.success(f"Successfully joined waiting list for Room ID {room_id_to_join} on {requested_datetime}.")
 
     # Current waiting lists user is part of
     st.header("Current Waiting Lists")
@@ -188,8 +186,7 @@ def waiting_list_option(user_id):
     if unjoin_waiting_list_button and room_id_to_unjoin:
         unjoin_waiting_list(user_id, room_id_to_unjoin)
         st.rerun()
-        st.success(f"Successfully unjoined waiting list for Room ID {
-                   room_id_to_unjoin}.")
+        st.success(f"Successfully unjoined waiting list for Room ID {room_id_to_unjoin}.")
 
     room_id_to_show_waiting_list = st.text_input(
         "Enter Room ID to show waiting list:")
@@ -230,9 +227,7 @@ def notifications_option(current_user_id):
     st.table(df_rooms)
 
 
-def manage_user_profile_option():
-    st.title("Manage User Profile")
-    # manage_user_profile()
+
 
 # Function to handle AdminAccess option
 
@@ -271,8 +266,7 @@ def admin_access_option():
     if st.button("Delete"):
         # Call the function to remove the room
         remove_room(room_id_to_delete)
-        st.success(f"Room with ID {
-                   room_id_to_delete} deleted successfully.")
+        st.success(f"Room with ID {room_id_to_delete} deleted successfully.")
 
     st.subheader("Update an Existing Room")
 
@@ -298,19 +292,19 @@ st.sidebar.title("Navigation")
 if not st.session_state.logged_in:
     st.sidebar.button("Login", on_click=set_page, args=("Login",))
 else:
-
-    if st.session_state.page == "home":
-        st.title("Welcome to Conference Room Booking System")
-    st.sidebar.button("View Rooms", on_click=set_page, args=("ViewRooms",))
-    # st.sidebar.button("View Rooms By Date", on_click=set_page,
-    #                   args=("ViewRoomsForDate",))
-    st.sidebar.button("Book Rooms", on_click=set_page, args=("BookRooms",))
-    st.sidebar.button("Waiting List", on_click=set_page, args=("WaitingList",))
-    st.sidebar.button("Notifications", on_click=set_page,
-                      args=("Notification",))
-    st.sidebar.button("Manage User Profile", on_click=set_page,
-                      args=("ManageUserProfile",))
-    st.sidebar.button("Admin Access", on_click=set_page, args=("AdminAccess",))
+    if st.session_state.user[1] == 'username2':
+        if st.session_state.page == "home":
+            st.title("Welcome to Conference Room Booking System")
+        st.sidebar.button("View Rooms", on_click=set_page, args=("ViewRooms",))
+        # st.sidebar.button("View Rooms By Date", on_click=set_page,
+        #                   args=("ViewRoomsForDate",))
+        st.sidebar.button("Book Rooms", on_click=set_page, args=("BookRooms",))
+        st.sidebar.button("Waiting List", on_click=set_page, args=("WaitingList",))
+        st.sidebar.button("Notifications", on_click=set_page,
+                        args=("Notification",))
+    elif st.session_state.user[1] == 'username7' :
+        st.header(f"Welcome {st.session_state.user[1]}") 
+        st.sidebar.button("Admin Access", on_click=set_page, args=("AdminAccess",))
 
 # Display content based on selected page
 if st.session_state.page == "Login":
@@ -325,7 +319,6 @@ elif st.session_state.page == "WaitingList":
     waiting_list_option(st.session_state.user[0])
 elif st.session_state.page == "Notification":
     notifications_option(st.session_state.user[0])
-elif st.session_state.page == "ManageUserProfile":
-    manage_user_profile_option()
-elif st.session_state.page == "AdminAccess":
+
+elif st.session_state.page == "AdminAccess" :
     admin_access_option()
