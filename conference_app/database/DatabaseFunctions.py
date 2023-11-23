@@ -1,6 +1,6 @@
 import sqlite3
 import streamlit as st
-
+# from Streamlit import *
 import json
 import pandas as pd
 
@@ -245,7 +245,7 @@ def show_waiting_list_for_user(user_id):
     except Exception as e:
         print(f"Error showing waiting list: {e}")
 
-# Function to unjoin waiting list
+# Function to unjoin waiting listd
 
 
 def unjoin_waiting_list(user_id, room_id):
@@ -272,8 +272,7 @@ def book_room(user_id, room_id_to_book, date_to_book, start_time_to_book, end_ti
             """, (user_id, room_id_to_book, f"{date_to_book} {start_time_to_book}", f"{date_to_book} {end_time_to_book}"))
 
             connection.commit()
-            print(f"Room ID {room_id_to_book} booked successfully on {
-                  date_to_book} from {start_time_to_book} to {end_time_to_book}.")
+            print(f"Room ID {room_id_to_book} booked successfully on {date_to_book} from {start_time_to_book} to {end_time_to_book}.")
 
     except Exception as e:
         print(f"Error booking room: {e}")
@@ -336,8 +335,7 @@ def unbook_room(booking_id):
                         """, (user[0], f"The room (ID: {room_id}) is now available on {canceled_date}.",))
 
                 connection.commit()
-                print(f"Booking ID {
-                      booking_id} canceled successfully. Notifications sent to waiting list users.")
+                print(f"Booking ID {booking_id} canceled successfully. Notifications sent to waiting list users.")
 
     except Exception as e:
         print(f"Error canceling booking: {e}")
